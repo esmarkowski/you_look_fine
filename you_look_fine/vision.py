@@ -3,12 +3,20 @@ import requests
 from .image_processing import encode_image, resize_image
 from .config import config
 
-def get_compliment(image_path, image_text):
-    # Upload the image as a file to OpenAI
+def get_compliment(image_paths, image_text):
+    # Upload the images as files to OpenAI
 
-    resized_image = resize_image(image_path)
-    # Getting the base64 string
-    base64_image = encode_image(resized_image)
+    image_messages = []
+    for image_path in image_paths:
+        resized_image = resize_image(image_path)
+        # Getting the base64 string
+        base64_image = encode_image(resized_image)
+        image_messages.append({
+            "type": "image_url",
+            "image_url": {
+                "url": f"data:image/jpeg;base64,{base64_image}"
+            }
+        })
 
     headers = {
         "Content-Type": "application/json",
@@ -18,24 +26,22 @@ def get_compliment(image_path, image_text):
     payload = {
         "model": "gpt-4-vision-preview",
         "messages": [
-        {
-            "role": "user",
-            "content": [
             {
-                "type": "text",
-                "text": image_text
-            },
-            {
-                "type": "image_url",
-                "image_url": {
-                "url": f"data:image/jpeg;base64,{base64_image}"
-                }
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": image_text
+                    },
+                    *image_messages
+                ]
             }
-            ]
-        }
         ],
         "max_tokens": 300
     }
+
+    if config['debug']:
+        print("[Debug] images:", image_paths)
 
     response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
 
