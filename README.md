@@ -4,7 +4,7 @@ This Python script, detect_motion.py, is designed to detect motion through a web
 
 __"Mirror, mirror on the wall..."__
 ```
-python detect_motion.py --debug --run-once
+detect_motion.py --debug --run-once
 ```
 
 The script uses OpenCV for motion detection and the OpenAI API for generating compliments. It's designed to be run on a Mac, Linux (especially raspi), using the afplay or mpg123 command to play audio.
@@ -43,7 +43,7 @@ export OPENAI_API_KEY=your_actual_key_here
 Run the script from the command line with the following arguments:
 
 ```
-python detect_motion.py --run-once
+detect_motion.py --run-once
 ```
 When running without the `--run-once` argument, the script will continously run and deliver compliments based on the frequency you specify with the following arguments. 
 
@@ -64,7 +64,7 @@ When running without the `--run-once` argument, the script will continously run 
 Useful for testing. The program will run until motion is detected and send a single frame to the OpenAI Vision API, deliver a compliment and exit.
 
 ```
-python detect_motion.py --debug --run-once
+detect_motion.py --debug --run-once
 ```
 
 #### Adjust the time between compliments
@@ -73,16 +73,23 @@ If you want to send a compliment once every hour, or once a day, and so on then 
 rate limits and cost. 
 
 ```
-python detect_motion.py --repeat-delay 15000 --motion-threshold 10000 --max-time-between-requests 50000
+detect_motion.py --repeat-delay 15000 --motion-threshold 10000 --max-time-between-requests 50000
 ```
 
 #### Adjust the vision prompt
 ```
-python detect_motion.py --debug --run-once --vision-prompt "Give helpful style advice to the person in the photo. Keep it short, tell them one thing to consider. Address the user as 'You'"
+detect_motion.py --debug --run-once --vision-prompt "Give helpful style advice to the person in the photo. Keep it short, tell them one thing to consider. Address the user as 'You'"
+```
+
+#### Visual Assistance
+```
+detect_motion.py --debug --run-once --vision-prompt "You are an assistant for the visually impaired. Describe what's in the image, obstacles and important features. Keep it short."
 ```
 
 #### Dystopia
 
 ```
-python detect_motion.py --debug --run-once --vision-prompt "Describe the person in the image. Keep it short, describe identifying features, age, gender, hair color, tatoos, eye color, etc."
+detect_motion.py --debug --run-once --vision-prompt "Describe the person in the image. Keep it short, describe identifying features, age, gender, hair color, tatoos, eye color, etc."
 ```
+
+
