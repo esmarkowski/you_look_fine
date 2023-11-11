@@ -1,0 +1,133 @@
+#!/usr/bin/env python3
+
+import argparse
+import cv2
+import requests
+import json
+import subprocess
+import os
+import platform
+from pathlib import Path
+from PIL import Image
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from you_look_fine.image_processing import resize_image, encode_image
+from you_look_fine.vision import get_compliment
+from you_look_fine.voice import text_to_speech
+from you_look_fine.config import config
+
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description='Run YouLookFine.')
+parser.add_argument('--repeat-delay', type=int, default=5000, help='The delay between repetitions, in milliseconds.')
+parser.add_argument('--motion-threshold', type=int, default=10000, help='The motion detection threshold.')
+parser.add_argument('--max-time-between-requests', type=int, default=500000, help='The maximum time between requests, in seconds.')
+parser.add_argument('--debug', action='store_true', help='Enable debug mode.')
+parser.add_argument('--mute', action='store_true', help='Mute audio.')
+parser.add_argument('--run-once', action='store_true', help='Runs until detection is made and compliment is given.')
+parser.add_argument('--vision-prompt', type=str, default="Give a short compliment based on the person's appearance in the image. Call out distinct features.", help='Instructions for vision.')
+parser.add_argument('--voice', type=str, default='fable', choices=['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'], help='The voice to use for text-to-speech.')
+parser.add_argument('--infer-action', action='store_true', help='Infer action in the scene from multiple frames.')
+parser.add_argument('--capture-frames', type=int, default=3, help='The number of frames to capture when inferring action.')
+parser.add_argument('--capture-frames-delay', type=int, default=2000, help='The delay between capturing frames, in milliseconds.')
+
+args = parser.parse_args()
+
+# Setup configuration
+config.update(vars(args))
+config['api_key'] = os.getenv('OPENAI_API_KEY')
+
+# Initialize the motion detection
+camera = cv2.VideoCapture(0)  # Use the correct camera index
+motion_detector = cv2.createBackgroundSubtractorMOG2()
+
+if config['debug']:
+    print("[Debug] Initializing...")
+# Initialize the request state
+frame_counter = 0
+request_in_progress = False
+camera_warmed_up = False
+
+frames = []
+
+try:
+    while True:
+        ret, frame = camera.read()
+
+        if not camera_warmed_up:
+            frame_counter += 1
+            if frame_counter > 20:
+                # After 20 frames, consider the camera warmed up
+                print("Camera initialized")
+                camera_warmed_up = True
+            else:
+                # Skip this frame and go to the next iteration of the loop
+                continue
+        if not ret:
+            break
+
+        # Apply the motion detector to the frame
+        motion_mask = motion_detector.apply(frame)
+        
+        # If there's enough motion and no request is in progress, proceed
+        if motion_mask.sum() > config['motion_threshold'] and not request_in_progress:
+            
+            if config['infer_action']:
+                for _ in range(config['capture_frames']):
+                    if not ret:
+                        break
+                    frames.append(frame)
+                    cv2.waitKey(config['capture_frames_delay'])
+            else:
+                if not ret:
+                    break
+                frames = [frame]
+
+
+            print("Motion detected")
+            # Set the request state to in progress
+            request_in_progress = True
+
+            # Save the frame as an image
+            image_path = '/tmp/detected_motion.jpg'
+            cv2.imwrite(image_path, frame)
+            
+            # Get a compliment for the image
+            compliment = get_compliment(image_path, config['vision_prompt'])
+            
+            if config['debug']:
+                print("[Debug] Compliment: ", compliment)
+
+
+            # Play the audio file
+            if not config['mute']:
+                # Convert the compliment to speech
+                if config['debug']:
+                    print("[Debug] text_to_speech called with text:", compliment)
+
+                audio_file = '/tmp/compliment.mp3'
+                text_to_speech(compliment, audio_file)
+                if platform.system() == 'Darwin':
+                    subprocess.run(["afplay", audio_file])
+                else:
+                    subprocess.run(["mpg123", audio_file])
+
+            # Set the request state back to not in progress
+            request_in_progress = False
+
+            if config['run_once']:
+                break
+
+            # Wait for a while before detecting motion again to avoid repeats
+            cv2.waitKey(config['repeat_delay'])
+
+        # Wait for a while before the next frame
+        cv2.waitKey(config['max_time_between_requests'])   
+    # Release the camera and close any open windows
+except KeyboardInterrupt:
+    print("Interrupted by user. Exiting...")
+finally:
+    # Release the camera and destroy all windows
+    camera.release()
+    cv2.destroyAllWindows()
