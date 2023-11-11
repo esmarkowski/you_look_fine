@@ -5,21 +5,33 @@ import json
 import subprocess
 import os
 import base64
+import platform
 from pathlib import Path
 from openai import OpenAI
+from PIL import Image
 
 client = OpenAI()
 
+def resize_image(image_path, size=(800, 600)):
+    with Image.open(image_path) as img:
+        # Resize the image
+        img = img.resize(size)
+
+        # Save the resized image to a temporary file
+        temp_path = "/tmp/resized_image.jpg"
+        img.save(temp_path)
+        return temp_path
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode('utf-8')
 
 # Function to get a compliment based on the person's appearance in the image
-def get_compliment(image_path):
+def get_compliment(image_path, image_text):
     # Upload the image as a file to OpenAI
 
+    resized_image = resize_image(image_path)
     # Getting the base64 string
-    base64_image = encode_image(image_path, image_text)
+    base64_image = encode_image(resized_image)
 
     headers = {
         "Content-Type": "application/json",
@@ -77,7 +89,7 @@ parser.add_argument('--max-time-between-requests', type=int, default=500000, hel
 parser.add_argument('--debug', action='store_true', help='Enable debug mode.')
 parser.add_argument('--mute', action='store_true', help='Mute audio.')
 parser.add_argument('--run-once', action='store_true', help='Runs until detection is made and compliment is given.')
-parser.add_argument('--vision-prompt', type=str default="Give a short compliment based on the person's appearance in the image. Call out distinct features." help='Instructions for vision.')
+parser.add_argument('--vision-prompt', type=str, default="Give a short compliment based on the person's appearance in the image. Call out distinct features.", help='Instructions for vision.')
 parser.add_argument('--voice', type=str, default='fable', choices=['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'], help='The voice to use for text-to-speech.')
 args = parser.parse_args()
 

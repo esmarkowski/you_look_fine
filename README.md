@@ -57,7 +57,7 @@ python detect_motion.py --repeat-delay 5000 --motion-threshold 10000 --max-time-
 - `--debug`: Enable debug mode. If this flag is present, the program will print a debug message instead of sending a request to the API.
 - `--mute`: Mutes TTS.
 - `--run-once`: Runs until motion is detected and compliment is delivered. 
-- `--image-prompt TEXT`: Instructions for vision. Default: Give a short compliment based on the person's appearance in the image. Call out distinct features.
+- `--vision-prompt TEXT`: Instructions for vision. Default: Give a short compliment based on the person's appearance in the image. Call out distinct features.
 - `--voice TEXT`: The voice to use for text-to-speech. Default is 'fable'. Choices are 'alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'.
 
 # Running
