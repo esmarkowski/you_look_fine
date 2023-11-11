@@ -62,7 +62,7 @@ def text_to_speech(text, output_file):
 
     response = client.audio.speech.create(
         model="tts-1",
-        voice="fable",
+        voice=args.voice,
         input=text
     )
 
@@ -78,6 +78,7 @@ parser.add_argument('--debug', action='store_true', help='Enable debug mode.')
 parser.add_argument('--mute', action='store_true', help='Mute audio.')
 parser.add_argument('--run-once', action='store_true', help='Runs until detection is made and compliment is given.')
 parser.add_argument('--vision-prompt', type=str default="Give a short compliment based on the person's appearance in the image. Call out distinct features." help='Instructions for vision.')
+parser.add_argument('--voice', type=str, default='fable', choices=['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'], help='The voice to use for text-to-speech.')
 args = parser.parse_args()
 
 # Use the arguments in your code

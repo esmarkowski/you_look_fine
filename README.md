@@ -49,29 +49,16 @@ Run the script from the command line with the following arguments:
 python detect_motion.py --repeat-delay 5000 --motion-threshold 10000 --max-time-between-requests 15 --debug
 ```
 
-Replace `YOUR_ASSISTANT_ID` with your actual assistant ID.
-
 ## Command-line arguments
 
 - `--repeat-delay`: The delay between repetitions, in milliseconds. Default is 5000.
 - `--motion-threshold`: The motion detection threshold. Default is 10000.
 - `--max-time-between-requests`: The maximum time between requests, in seconds. Default is 15.
 - `--debug`: Enable debug mode. If this flag is present, the program will print a debug message instead of sending a request to the API.
-- `--mute`: Mutes TTS
+- `--mute`: Mutes TTS.
 - `--run-once`: Runs until motion is detected and compliment is delivered. 
-- `--image-prompt TEXT`: Instructions for vision. Default: Give a short compliment based on the person's appearance in the image. Call out distinct features.  
-
-## TODO
-
-- Prevent sending new requests if another request to get a compliment has started.
-
-Please replace YOUR_OPENAI_API_KEY with your actual API key, assistant_id with the correct ID of your assistant, and text-to-speech-model with the appropriate text-to-speech model identifier. You should also handle the response from the API carefully, checking for errors and ensuring that the response.content contains the expected audio data.
-
-Note that the motion_threshold value determines the sensitivity of the motion detection and may need to be adjusted based on the specific environment and camera setup. Also, you may want to add additional logic to handle different types of responses from the API, such as errors or unexpected content.
-
-[IMAGE]
-
-"Your leather apron really speaks to the skilled artisan in you. It's not only practical but gives off a vibe of true craftsmanship. And the way you've matched it with sturdy boots and protective gloves shows you're ready for any task. Keep up the excellent work!"
+- `--image-prompt TEXT`: Instructions for vision. Default: Give a short compliment based on the person's appearance in the image. Call out distinct features.
+- `--voice TEXT`: The voice to use for text-to-speech. Default is 'fable'. Choices are 'alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'.
 
 # Running
 
