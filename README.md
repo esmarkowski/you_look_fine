@@ -83,7 +83,7 @@ bin/you_look_fine --debug --run-once --vision-prompt "Give helpful style advice 
 
 #### Visual Assistance
 ```
-bin/you_look_fine --debug --run-once --vision-prompt "You are an assistant for the visually impaired. Describe what's in the image, obstacles and important features. Keep it short."
+bin/you_look_fine --infer-action --run-once --vision-prompt "You are an assistant for the visually impaired. Describe what's in the image, obstacles and important features. Keep it short."
 ```
 
 #### Dystopia
