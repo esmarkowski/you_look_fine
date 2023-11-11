@@ -86,6 +86,12 @@ bin/you_look_fine --debug --run-once --vision-prompt "Give helpful style advice 
 bin/you_look_fine --infer-action --run-once --vision-prompt "You are an assistant for the visually impaired. Describe what's in the image, obstacles and important features. Keep it short."
 ```
 
+#### Infer Action
+
+```
+bin/you_look_fine --debug --run-once --infer-action --vision-prompt "Infer action from the included images. Describe what actions may be occuring across the images. Do not describe what's happening in each individual image. Keep your response brief" --capture-frames 3 --capture-frames-delay 1000
+```
+
 #### Dystopia
 
 ```
