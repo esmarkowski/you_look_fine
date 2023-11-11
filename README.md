@@ -1,6 +1,6 @@
-# OpenAI Assistant
+# You Look Fine To Me
 
-This Python script, detect_motion_mac.py, is designed to detect motion through a webcam. When motion is detected, it sends a request to an AI assistant, which generates a compliment based on the image captured. The compliment is then converted to speech and played back.
+This Python script, detect_motion.py, is designed to detect motion through a webcam. When motion is detected, it sends a request to an AI assistant, which generates a compliment based on the image captured. The compliment is then converted to speech and played back.
 
 The script accepts several command-line arguments:
 
@@ -11,7 +11,7 @@ The script uses OpenCV for motion detection and the OpenAI API for generating co
 The script handles keyboard interrupts, so you can stop it by pressing Ctrl+C. It also ensures that the webcam is properly released and all windows are destroyed when the script ends, regardless of whether it was interrupted or finished normally.
 
 
-Use at your own risk. Read 
+Use at your own risk. You can easily hit rate limits if you don't use --run-once or read the command line arguments. 
 
 
 ```
