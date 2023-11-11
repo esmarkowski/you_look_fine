@@ -76,12 +76,5 @@ Note that the motion_threshold value determines the sensitivity of the motion de
 # Running
 
 ```
-python detect_motion.py --assistant-id YOUR_ASSISTANT_ID --repeat-delay 5000 --motion-threshold 10000 --max-time-between-requests 15
+python detect_motion.py --repeat-delay 15000 --motion-threshold 10000 --max-time-between-requests 50000
 ```
-
-#### Mac
-python detect_motion_mac.py --repeat-delay 5000 --motion-threshold 10000 --max-time-between-requests 500000 --debug --mute
-
-## TODO
-- prevent sending new requests if another request to get a compliment has started
-- 
