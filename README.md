@@ -65,3 +65,8 @@ python detect_motion.py --repeat-delay 5000 --motion-threshold 10000 --max-time-
 ```
 python detect_motion.py --repeat-delay 15000 --motion-threshold 10000 --max-time-between-requests 50000
 ```
+
+#### Adjust the vision prompt.
+```
+python detect_motion.py --debug --run-once --vision-prompt "Give helpful style advice to the person in the photo. Keep it short, tell them one thing to consider. Address the user as 'You'"
+```
