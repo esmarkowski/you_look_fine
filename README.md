@@ -58,7 +58,16 @@ When running without the `--run-once` argument, the script will continously run 
 - `--vision-prompt TEXT`: Instructions for vision. Default: Give a short compliment based on the person's appearance in the image. Call out distinct features.
 - `--voice TEXT`: The voice to use for text-to-speech. Default is 'fable'. Choices are 'alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'.
 
-### Adjust the time between compliments. 
+## Examples
+
+#### Run until motion is detected
+Useful for testing. The program will run until motion is detected and send a single frame to the OpenAI Vision API, deliver a compliment and exit.
+
+```
+python detect_motion.py --debug --run-once
+```
+
+#### Adjust the time between compliments
 
 If you want to send a compliment once every hour, or once a day, and so on then adjust the timing to your liking. This will also determine how frequently request are made to the OpenAI API and can help manage
 rate limits and cost. 
@@ -67,7 +76,15 @@ rate limits and cost.
 python detect_motion.py --repeat-delay 15000 --motion-threshold 10000 --max-time-between-requests 50000
 ```
 
-#### Adjust the vision prompt.
+#### Adjust the vision prompt
 ```
 python detect_motion.py --debug --run-once --vision-prompt "Give helpful style advice to the person in the photo. Keep it short, tell them one thing to consider. Address the user as 'You'"
+```
+
+#### Dystopia
+
+```
+python detect_motion.py --debug --run-once --vision-prompt "Describe the person in the image. Keep it short, describe identifying features, age, gender, hair color, tatoos, eye color, etc. Address the user as 'You'"
+```
+
 ```
