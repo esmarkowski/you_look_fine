@@ -13,7 +13,7 @@ The script handles keyboard interrupts, so you can stop it by pressing Ctrl+C. I
 
 Use at your own risk. You can easily hit rate limits if you don't use --run-once or read the command line arguments. 
 
-
+"Mirror, mirror on the wall..."
 ```
 python detect_motion.py --debug --run-once
 ```
