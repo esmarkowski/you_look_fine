@@ -84,5 +84,5 @@ python detect_motion.py --debug --run-once --vision-prompt "Give helpful style a
 #### Dystopia
 
 ```
-python detect_motion.py --debug --run-once --vision-prompt "Describe the person in the image. Keep it short, describe identifying features, age, gender, hair color, tatoos, eye color, etc. Address the user as 'You'"
+python detect_motion.py --debug --run-once --vision-prompt "Describe the person in the image. Keep it short, describe identifying features, age, gender, hair color, tatoos, eye color, etc."
 ```
