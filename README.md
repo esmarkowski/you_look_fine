@@ -93,3 +93,9 @@ detect_motion.py --debug --run-once --vision-prompt "Describe the person in the 
 ```
 
 
+## TODO
+
+#### Feature: Infer Action in the scene from multiple frames. 
+
+- Add `--infer-action`, `--capture-frames INT` and `--capture-frames-delay INT`. 
+- When `--infer-action` mode is on, capture the number of frames specified by `--capture-frames` spaced apart by `--capture-frames-delay` and send the captured frames to infer action within the scene
