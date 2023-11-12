@@ -1,6 +1,6 @@
 # You Look Fine To Me
 
-This Python script, bin/you_look_fine, is designed to detect motion through a webcam. When motion is detected, it sends a request to an AI assistant, which generates a compliment based on the image captured. The compliment is then converted to speech and played back.
+This Python script is designed to detect motion through a webcam and analyze it using GPT Vision and recieving the analysis using OpenAI Text to Speech. When motion is detected, it sends a request to an AI assistant, which generates a compliment based on the image captured. The compliment is then converted to speech and played back.
 
 __"Mirror, mirror on the wall..."__
 ```
