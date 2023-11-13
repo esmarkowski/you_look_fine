@@ -1,50 +1,53 @@
 # api.py
-import requests
+from openai import OpenAI
+import time
 from .image_processing import encode_image, resize_image
-from .config import config
-from .logger import logger
+class Vision:
+    def __init__(self):
+        self.last_request = {'time': 0}
+        self._client = None
 
-def get_vision(image_paths, image_text):
-    # Upload the images as files to OpenAI
-
-    image_messages = []
-    for image_path in image_paths:
-        resized_image = resize_image(image_path)
-        # Getting the base64 string
-        base64_image = encode_image(resized_image)
-        image_messages.append({
-            "type": "image_url",
-            "image_url": {
-                "url": f"data:image/jpeg;base64,{base64_image}"
-            }
-        })
-
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {config['api_key']}"
-    }
-
-    payload = {
-        "model": "gpt-4-vision-preview",
-        "messages": [
-            {
-                "role": "user",
-                "content": [
+    def analyze(self, frames, prompt):
+        # Upload the images as files to OpenAI
+        response = self.client.chat.completions.create(
+            model="gpt-4-vision-preview",
+            messages=[
                     {
-                        "type": "text",
-                        "text": image_text
-                    },
-                    *image_messages
-                ]
-            }
-        ],
-        "max_tokens": 300
-    }
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": prompt
+                            },
+                            *self.build_attachments(frames)
+                        ]
+                    }
+                ],
+            max_tokens=300
+        )
+        
+        self.last_request = {'time': time.time()}
+        # Process the response to extract the message
+        content = response.choices[0].message.content.strip()
+        return content
 
-    logger.debug("images: %s", image_paths)
 
-    response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+    def build_attachments(self, frames):
+        attachments = []
+        for image_path in frames:
+            resized_image = resize_image(image_path)
+            # Getting the base64 string
+            base64_image = encode_image(resized_image)
+            attachments.append({
+                "type": "image_url",
+                "image_url": {
+                    "url": f"data:image/jpeg;base64,{base64_image}"
+                }
+            })
+        return attachments
 
-    # Process the response to extract the compliment
-    compliment = response.json()['choices'][0]['message']['content'].strip()
-    return compliment
+    @property
+    def client(self):
+        if self._client is None:
+            self._client = OpenAI()
+        return self._client

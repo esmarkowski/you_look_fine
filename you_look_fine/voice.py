@@ -1,13 +1,40 @@
 from openai import OpenAI
-from .config import config
+from .logger import logger
+import subprocess
+import platform
+import time
 
-def text_to_speech(text, output_file):
+class Voice:
+    def __init__(self, output_file):
+        self.last_request = {'time': 0}
+        self.output_file = output_file
+        self._client = None
 
-    client = OpenAI()
-    response = client.audio.speech.create(
-        model="tts-1",
-        voice=config['voice'],
-        input=text
-    )
+    def text_to_speech(self, text, voice="fable"):
+        response = self.client.audio.speech.create(
+            model="tts-1",
+            voice=voice,
+            input=text
+        )
 
-    response.stream_to_file(output_file)
+        self.last_request = {'time': time.time()}
+
+        response.stream_to_file(self.output_file)
+
+    def speak(self):
+        subprocess.run([self.system_player, self.output_file])
+
+
+    @property
+    def system_player(self):
+        if platform.system() == 'Darwin':
+            return 'afplay'
+        else:
+            return 'mpg123'
+
+    @property
+    def client(self):
+        if self._client is None:
+            self._client = OpenAI()
+        return self._client
+

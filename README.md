@@ -57,6 +57,7 @@ When running without the `--run-once` argument, the script will continously run 
 - `--run-once`: Runs until motion is detected and compliment is delivered. 
 - `--vision-prompt TEXT`: Instructions for vision. Default: Give a short compliment based on the person's appearance in the image. Call out distinct features.
 - `--voice TEXT`: The voice to use for text-to-speech. Default is 'fable'. Choices are 'alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'.
+- `--camera`: The camera source. Can be an integer for a local camera or a string for an RTSP URL. Default is 0.
 
 ## Examples
 
@@ -98,10 +99,6 @@ bin/you_look_fine --debug --run-once --infer-action --capture-frames 3 --capture
 bin/you_look_fine --debug --run-once --vision-prompt "Describe the person in the image. Keep it short, describe identifying features, age, gender, hair color, tatoos, eye color, etc."
 ```
 
-
-## TODO
-
-#### Feature: Infer Action in the scene from multiple frames. 
-
-- Add `--infer-action`, `--capture-frames INT` and `--capture-frames-delay INT`. 
-- When `--infer-action` mode is on, capture the number of frames specified by `--capture-frames` spaced apart by `--capture-frames-delay` and send the captured frames to infer action within the scene
+```
+bin/you_look_fine --run-once --vision-prompt "Describe who is at the door." --camera "rtsps://YOUR_RTSPS_STREAM"
+```

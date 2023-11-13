@@ -2,21 +2,11 @@
 
 import argparse
 import cv2
-import requests
-import json
-import subprocess
 import os
-import platform
-from pathlib import Path
-from PIL import Image
 import time
 import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-
-
-from you_look_fine.config import config
 
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description='Run YouLookFine.')
@@ -29,34 +19,45 @@ parser.add_argument('--run-once', action='store_true', help='Runs until detectio
 parser.add_argument('--vision-prompt', type=str, default="Give a short compliment based on the person's appearance in the image. Call out distinct features.", help='Instructions for vision.')
 parser.add_argument('--voice', type=str, default='fable', choices=['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'], help='The voice to use for text-to-speech.')
 parser.add_argument('--infer-action', action='store_true', help='Infer action in the scene from multiple frames.')
-parser.add_argument('--capture-frames', type=int, default=2, help='The number of frames to capture when inferring action.')
+parser.add_argument('--capture-frames', type=int, default=1, help='The number of frames to capture when inferring action.')
 parser.add_argument('--capture-frames-delay', type=int, default=1000, help='The delay between capturing frames, in milliseconds.')
-
-args = parser.parse_args()
+parser.add_argument('--camera', default=0, help='The camera source. Can be an integer for a local camera or a string for an RTSP URL.')
 
 # Setup configuration
-config.update(vars(args))
-config['api_key'] = os.getenv('OPENAI_API_KEY')
+from you_look_fine.config import config
 
-from you_look_fine.image_processing import resize_image, encode_image
-from you_look_fine.vision import get_vision
-from you_look_fine.voice import text_to_speech
+config.update(vars(parser.parse_args()))
+
+from you_look_fine.vision import Vision 
+from you_look_fine.voice import Voice
 from you_look_fine.logger import logger
 
-# Initialize the motion detection
-camera = cv2.VideoCapture(0)  # Use the correct camera index
-motion_detector = cv2.createBackgroundSubtractorMOG2()
-
 logger.info("Initializing...")
+# Initialize the motion detection
+camera_source = config['camera']
+try:
+    # Try to convert the camera source to an integer
+    camera_source = int(camera_source)
+except ValueError:
+    # If it can't be converted to an integer, assume it's an RTSP URL
+    pass
+
+camera = cv2.VideoCapture(camera_source)
+
+
+motion_detector = cv2.createBackgroundSubtractorMOG2()
 
 # Initialize the request state
 frame_counter = 0
 request_in_progress = False
 camera_warmed_up = False
-last_vision_request = {'time': 0, 'error': None}
-last_tts_request = {'time': 0, 'error': None}
+
+WARM_UP_FRAMES = 10
 
 frames = []
+
+voice = Voice('/tmp/you_look_fine_response.mp3')
+vision = Vision()
 
 try:
     while True:
@@ -64,91 +65,53 @@ try:
 
         if not camera_warmed_up:
             frame_counter += 1
-            if frame_counter > 20:
+            if frame_counter > WARM_UP_FRAMES:
                 # After 20 frames, consider the camera warmed up
                 logger.info("Camera initialized")
                 camera_warmed_up = True
             else:
-                # Skip this frame and go to the next iteration of the loop
                 continue
-        if not ret:
-            break
 
         # Apply the motion detector to the frame
         motion_mask = motion_detector.apply(frame)
-        time_since_last_vision_request = time.time() - last_vision_request['time']
-        detected_motion = motion_mask.sum() > config['motion_threshold'] 
+
+        motion_detected = motion_mask.sum() > config['motion_threshold'] 
+        time_since_last_vision_request = time.time() - vision.last_request['time']
         can_make_requests = time_since_last_vision_request > (config['max_time_between_requests']/ 1000)
 
-
         # If there's enough motion and no request is in progress, proceed
-        if detected_motion and can_make_requests and not request_in_progress:
+        if motion_detected and can_make_requests and not request_in_progress:
             logger.info("Motion detected")
 
-            if config['infer_action']:
-                # Capture multiple frames if we're inferring action and detected motion
-                for _ in range(config['capture_frames']):
-                    ret, frame = camera.read()  # Capture a new frame
-                    if not ret:
-                        break
-                    image_path = f'/tmp/detected_motion_{len(frames)}.jpg'
-                    cv2.imwrite(image_path, frame)
-                    frames.append(image_path)
-
-                    logger.debug("Frame captured, waiting %d ms", config['capture_frames_delay'] / 1000)
-
-                    time.sleep(config['capture_frames_delay'] / 1000)  # convert ms to seconds
-
-            else:
-                # Capture a single frame
-                ret, frame = camera.read()
+            for _ in range(config['capture_frames']):
+                ret, frame = camera.read()  # Capture a new frame
                 if not ret:
                     break
-                image_path = '/tmp/detected_motion.jpg'
+                image_path = f'/tmp/detected_motion_{len(frames)}.jpg'
                 cv2.imwrite(image_path, frame)
-                frames = [image_path]
+                frames.append(image_path)
+
+                logger.debug("Frame captured, waiting %d ms", config['capture_frames_delay'])
+
+                time.sleep(config['capture_frames_delay'] / 1000)  # convert ms to seconds
 
             # If we have enough frames or we're not inferring action, proceed
-            if len(frames) == config['capture_frames'] or not config['infer_action']:
-                # Set the request state to in progress
-                request_in_progress = True
+            frame_buffer_ready = len(frames) == config['capture_frames']
 
+            if frame_buffer_ready:
                 # Get vision request for the images
-                try: 
-                    vision_response = get_vision(frames, config['vision_prompt'])
-                    frames = []
-                except Exception as e:
-                    logger.error("Error getting vision: %s", e)
-                    continue
-                finally:
-                    # Record time of request
-                    last_vision_request = {'time': time.time()}
-
-
+                request_in_progress = True
+                vision_response = vision.analyze(frames, config['vision_prompt'])
                 logger.debug("Vision Response: %s", vision_response)
-
-
                 # Play the audio file
                 if not config['mute']:
                     # Convert the vision request to speech
-                    logger.debug("Speaking...")
+                    logger.debug("%s speaking...", config['voice'])
+                    voice.text_to_speech(vision_response, config['voice'])
+                    voice.speak()
 
-                    try:
-                        audio_file = '/tmp/you_look_fine_response.mp3'
-                        text_to_speech(vision_response, audio_file)
-                    except Exception as e:
-                        logger.error("Error getting TTS: %s", e)
-                        continue
-                    finally:
-                        # Record time of request
-                        last_tts_request = {'time': time.time()}
-
-                    if platform.system() == 'Darwin':
-                        subprocess.run(["afplay", audio_file])
-                    else:
-                        subprocess.run(["mpg123", audio_file])
-
-                # Set the request state back to not in progress
+                # Set the request state back to not in progress and clear the frames
+                frames = []
                 request_in_progress = False
 
                 if config['run_once']:
