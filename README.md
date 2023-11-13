@@ -60,6 +60,7 @@ When running without the `--run-once` argument, the script will continously run 
 - `--capture-frames`: The number of frames to capture when inferring action. Default is 1.
 - `--capture-frames-delay`: The delay between capturing frames, in milliseconds. Default is 1000.
 - `--camera`: The camera source. Can be an integer for a local camera or a string for an RTSP URL. Default is 0.
+- `--soft-run`: Skips making calls to AI
   
 ## Examples
 
