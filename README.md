@@ -89,7 +89,7 @@ bin/you_look_fine --infer-action --run-once --vision-prompt "You are an assistan
 #### Infer Action
 
 ```
-bin/you_look_fine --debug --run-once --infer-action --capture-frames 3 --capture-frames-delay 1000 --vision-prompt "Please provide a specific description of the action being observed, emphasizing clarity and specificity. Describe the setting or context and the [subject/subjects] involved. Focus on the key actions, using precise and descriptive language to capture their nature. Ensure that the details included are those that can be confidently observed or inferred. Highlight the most relevant and significant aspects of the action or scene for an understanding. Respond in English that can be understood by an 10 year old. Respond in a sentence or two. Do not include references to the image sequence in your response (e.g. The first image shows, the second image shows). Respond in second person perspective."
+bin/you_look_fine --debug --run-once --infer-action --capture-frames 3 --capture-frames-delay 1000 --vision-prompt "Please provide a specific description of the action being observed in a single, cohesive moment, using clear and simple language suitable for a 10-year-old. Describe the setting or context and the subjects involved as they appear at one specific instance, not as a sequence of actions. Use precise and descriptive language to capture the nature of the key action in this single moment. The details should be those that can be confidently observed or inferred from this moment. Focus on the most relevant and significant aspects of the action or scene, and respond in second person perspective in one or two sentences."
 ```
 
 #### Dystopia

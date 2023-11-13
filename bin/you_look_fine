@@ -131,7 +131,7 @@ try:
                 # Play the audio file
                 if not config['mute']:
                     # Convert the vision request to speech
-                    logger.debug("Text To Speech: %s", vision_response)
+                    logger.debug("Speaking...")
 
                     try:
                         audio_file = '/tmp/you_look_fine_response.mp3'
