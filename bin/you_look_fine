@@ -43,8 +43,6 @@ except ValueError:
     pass
 
 camera = cv2.VideoCapture(camera_source)
-
-
 motion_detector = cv2.createBackgroundSubtractorMOG2()
 
 # Initialize the request state
@@ -53,7 +51,6 @@ request_in_progress = False
 camera_warmed_up = False
 
 WARM_UP_FRAMES = 10
-
 frames = []
 
 voice = Voice('/tmp/you_look_fine_response.mp3')
@@ -101,6 +98,7 @@ try:
             if frame_buffer_ready:
                 # Get vision request for the images
                 request_in_progress = True
+                logger.debug("Making vision request: %s", frames)
                 vision_response = vision.analyze(frames, config['vision_prompt'])
                 logger.debug("Vision Response: %s", vision_response)
                 # Play the audio file
