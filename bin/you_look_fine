@@ -21,6 +21,7 @@ parser.add_argument('--infer-action', action='store_true', help='Infer action in
 parser.add_argument('--capture-frames', type=int, default=1, help='The number of frames to capture when inferring action.')
 parser.add_argument('--capture-frames-delay', type=int, default=1000, help='The delay between capturing frames, in milliseconds.')
 parser.add_argument('--camera', default=0, help='The camera source. Can be an integer for a local camera or a string for an RTSP URL.')
+parser.add_argument('--soft-run', action='store_true', help='Run without any calls to APIs.' )
 
 # Setup configuration
 from you_look_fine.config import config
@@ -29,6 +30,7 @@ config.update(vars(parser.parse_args()))
 
 from you_look_fine.vision import Vision 
 from you_look_fine.voice import Voice
+from you_look_fine.camera_reader import CameraReader
 from you_look_fine.logger import logger
 
 logger.info("Initializing...")
@@ -54,10 +56,14 @@ frames = []
 
 voice = Voice('/tmp/you_look_fine_response.mp3')
 vision = Vision()
+reader = CameraReader(camera)
+reader.start()
 
 try:
     while True:
-        ret, frame = camera.read()
+        frame = reader.get_latest_frame()
+        if frame is None:
+            continue
         # Apply the motion detector to the frame
         motion_mask = motion_detector.apply(frame)
 
@@ -79,9 +85,10 @@ try:
             logger.info("Motion detected")
 
             for _ in range(config['capture_frames']):
-                ret, frame = camera.read()  # Capture a new frame
-                if not ret:
-                    break
+                frame = reader.get_latest_frame()  # Capture a new frame
+                if frame is None:
+                    continue
+
                 image_path = f'/tmp/detected_motion_{len(frames)}.jpg'
                 cv2.imwrite(image_path, frame)
                 frames.append(image_path)
@@ -94,21 +101,24 @@ try:
             frame_buffer_ready = len(frames) == config['capture_frames']
 
             if frame_buffer_ready:
-                # Get vision request for the images
-                request_in_progress = True
                 logger.debug("Making vision request: %s", frames)
-                vision_response = vision.analyze(frames, config['vision_prompt'])
-                logger.debug("Vision Response: %s", vision_response)
-                # Play the audio file
-                if not config['mute']:
-                    # Convert the vision request to speech
-                    logger.debug("%s speaking...", config['voice'])
-                    voice.text_to_speech(vision_response, config['voice'])
-                    voice.speak()
 
-                # Set the request state back to not in progress and clear the frames
-                frames = []
-                request_in_progress = False
+                if not config['soft_run']:
+                    # Get vision request for the images
+                    request_in_progress = True
+                    
+                    vision_response = vision.analyze(frames, config['vision_prompt'])
+                    logger.debug("Vision Response: %s", vision_response)
+                    # Play the audio file
+                    if not config['mute']:
+                        # Convert the vision request to speech
+                        logger.debug("%s speaking...", config['voice'])
+                        voice.text_to_speech(vision_response, config['voice'])
+                        voice.speak()
+
+                    # Set the request state back to not in progress and clear the frames
+                    frames = []
+                    request_in_progress = False
 
                 if config['run_once']:
                     break
@@ -117,5 +127,7 @@ except KeyboardInterrupt:
     logger.info("Interrupted by user. Exiting...")
 finally:
     # Release the camera and destroy all windows
+    reader.stop()
+    time.sleep(0.1)
     camera.release()
     cv2.destroyAllWindows()
