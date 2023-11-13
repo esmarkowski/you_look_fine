@@ -10,9 +10,9 @@ class Voice:
         self.output_file = output_file
         self._client = None
 
-    def text_to_speech(self, text, voice="fable"):
+    def text_to_speech(self, text, voice="fable", model="tts-1"):
         response = self.client.audio.speech.create(
-            model="tts-1",
+            model=model,
             voice=voice,
             input=text
         )

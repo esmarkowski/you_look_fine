@@ -99,6 +99,7 @@ bin/you_look_fine --debug --run-once --infer-action --capture-frames 3 --capture
 bin/you_look_fine --debug --run-once --vision-prompt "Describe the person in the image. Keep it short, describe identifying features, age, gender, hair color, tatoos, eye color, etc."
 ```
 
+#### RTSPS
 ```
-bin/you_look_fine --run-once --vision-prompt "Describe who is at the door." --camera "rtsps://YOUR_RTSPS_STREAM"
+bin/you_look_fine --run-once --infer-action --vision-prompt "Describe who is at the door." --camera "rtsps://YOUR_RTSPS_STREAM"
 ```
