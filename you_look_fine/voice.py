@@ -3,8 +3,6 @@ from .config import config
 
 def text_to_speech(text, output_file):
 
-        # return
-
     client = OpenAI()
     response = client.audio.speech.create(
         model="tts-1",

@@ -89,7 +89,7 @@ bin/you_look_fine --infer-action --run-once --vision-prompt "You are an assistan
 #### Infer Action
 
 ```
-bin/you_look_fine --debug --run-once --infer-action --vision-prompt "Infer action from the included images. Describe what actions may be occuring across the images. Do not describe what's happening in each individual image. Keep your response brief" --capture-frames 3 --capture-frames-delay 1000
+bin/you_look_fine --debug --run-once --infer-action --vision-prompt "Infer action from the included frames of video. Describe what actions may be occuring across those frames. Do not describe what's happening in each individual frame. Keep your response brief" --capture-frames 3 --capture-frames-delay 1000
 ```
 
 #### Dystopia

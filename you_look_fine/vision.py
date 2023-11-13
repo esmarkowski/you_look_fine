@@ -3,7 +3,7 @@ import requests
 from .image_processing import encode_image, resize_image
 from .config import config
 
-def get_compliment(image_paths, image_text):
+def get_vision(image_paths, image_text):
     # Upload the images as files to OpenAI
 
     image_messages = []
