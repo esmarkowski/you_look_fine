@@ -14,9 +14,8 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from you_look_fine.image_processing import resize_image, encode_image
-from you_look_fine.vision import get_vision
-from you_look_fine.voice import text_to_speech
+
+
 from you_look_fine.config import config
 
 # Parse command-line arguments
@@ -39,12 +38,17 @@ args = parser.parse_args()
 config.update(vars(args))
 config['api_key'] = os.getenv('OPENAI_API_KEY')
 
+from you_look_fine.image_processing import resize_image, encode_image
+from you_look_fine.vision import get_vision
+from you_look_fine.voice import text_to_speech
+from you_look_fine.logger import logger
+
 # Initialize the motion detection
 camera = cv2.VideoCapture(0)  # Use the correct camera index
 motion_detector = cv2.createBackgroundSubtractorMOG2()
 
-if config['debug']:
-    print("[Debug] Initializing...")
+logger.info("Initializing...")
+
 # Initialize the request state
 frame_counter = 0
 request_in_progress = False
@@ -62,7 +66,7 @@ try:
             frame_counter += 1
             if frame_counter > 20:
                 # After 20 frames, consider the camera warmed up
-                print("Camera initialized")
+                logger.info("Camera initialized")
                 camera_warmed_up = True
             else:
                 # Skip this frame and go to the next iteration of the loop
@@ -79,7 +83,7 @@ try:
 
         # If there's enough motion and no request is in progress, proceed
         if detected_motion and can_make_requests and not request_in_progress:
-            print("Motion detected")
+            logger.info("Motion detected")
 
             if config['infer_action']:
                 # Capture multiple frames if we're inferring action and detected motion
@@ -91,8 +95,7 @@ try:
                     cv2.imwrite(image_path, frame)
                     frames.append(image_path)
 
-                    if config['debug']:
-                        print("[Debug] Frame captured, waiting", config['capture_frames_delay'], "ms")
+                    logger.debug("Frame captured, waiting %d ms", config['capture_frames_delay'] / 1000)
 
                     time.sleep(config['capture_frames_delay'] / 1000)  # convert ms to seconds
 
@@ -107,7 +110,6 @@ try:
 
             # If we have enough frames or we're not inferring action, proceed
             if len(frames) == config['capture_frames'] or not config['infer_action']:
-                
                 # Set the request state to in progress
                 request_in_progress = True
 
@@ -116,28 +118,26 @@ try:
                     vision_response = get_vision(frames, config['vision_prompt'])
                     frames = []
                 except Exception as e:
-                    print("Error getting vision:", e)
+                    logger.error("Error getting vision: %s", e)
                     continue
                 finally:
                     # Record time of request
                     last_vision_request = {'time': time.time()}
 
 
-                if config['debug']:
-                    print("[Debug] Vision Response: ", vision_response)
+                logger.debug("Vision Response: %s", vision_response)
 
 
                 # Play the audio file
                 if not config['mute']:
                     # Convert the vision request to speech
-                    if config['debug']:
-                        print("[Debug] Text To Speech:", vision_response)
+                    logger.debug("Text To Speech: %s", vision_response)
 
                     try:
                         audio_file = '/tmp/you_look_fine_response.mp3'
                         text_to_speech(vision_response, audio_file)
                     except Exception as e:
-                        print("Error getting TTS:", e)
+                        logger.error("Error getting TTS: %s", e)
                         continue
                     finally:
                         # Record time of request
@@ -158,7 +158,7 @@ try:
 
     # Release the camera and close any open windows
 except KeyboardInterrupt:
-    print("Interrupted by user. Exiting...")
+    logger.info("Interrupted by user. Exiting...")
 finally:
     # Release the camera and destroy all windows
     camera.release()

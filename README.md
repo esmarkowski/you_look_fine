@@ -89,7 +89,7 @@ bin/you_look_fine --infer-action --run-once --vision-prompt "You are an assistan
 #### Infer Action
 
 ```
-bin/you_look_fine --debug --run-once --infer-action --vision-prompt "Infer action from the included frames of video. Describe what actions may be occuring across those frames. Do not describe what's happening in each individual frame. Keep your response brief" --capture-frames 3 --capture-frames-delay 1000
+bin/you_look_fine --debug --run-once --infer-action --capture-frames 3 --capture-frames-delay 1000 --vision-prompt "Please provide a specific description of the action being observed, emphasizing clarity and specificity. Describe the setting or context and the [subject/subjects] involved. Focus on the key actions, using precise and descriptive language to capture their nature. Ensure that the details included are those that can be confidently observed or inferred. Highlight the most relevant and significant aspects of the action or scene for an understanding. Respond in English that can be understood by an 10 year old. Respond in a sentence or two. Do not include references to the image sequence in your response (e.g. The first image shows, the second image shows). Respond in second person perspective."
 ```
 
 #### Dystopia

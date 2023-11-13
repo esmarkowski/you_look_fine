@@ -2,6 +2,7 @@
 import requests
 from .image_processing import encode_image, resize_image
 from .config import config
+from .logger import logger
 
 def get_vision(image_paths, image_text):
     # Upload the images as files to OpenAI
@@ -40,8 +41,7 @@ def get_vision(image_paths, image_text):
         "max_tokens": 300
     }
 
-    if config['debug']:
-        print("[Debug] images:", image_paths)
+    logger.debug("images: %s", image_paths)
 
     response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
 
