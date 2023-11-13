@@ -10,7 +10,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description='Run YouLookFine.')
-parser.add_argument('--repeat-delay', type=int, default=5000, help='The delay between repetitions, in milliseconds.')
 parser.add_argument('--motion-threshold', type=int, default=10000, help='The motion detection threshold.')
 parser.add_argument('--max-time-between-requests', type=int, default=500000, help='The maximum time between requests, in seconds.')
 parser.add_argument('--debug', action='store_true', help='Enable debug mode.')
@@ -59,6 +58,8 @@ vision = Vision()
 try:
     while True:
         ret, frame = camera.read()
+        # Apply the motion detector to the frame
+        motion_mask = motion_detector.apply(frame)
 
         if not camera_warmed_up:
             frame_counter += 1
@@ -68,9 +69,6 @@ try:
                 camera_warmed_up = True
             else:
                 continue
-
-        # Apply the motion detector to the frame
-        motion_mask = motion_detector.apply(frame)
 
         motion_detected = motion_mask.sum() > config['motion_threshold'] 
         time_since_last_vision_request = time.time() - vision.last_request['time']
@@ -115,9 +113,6 @@ try:
                 if config['run_once']:
                     break
 
-
-
-    # Release the camera and close any open windows
 except KeyboardInterrupt:
     logger.info("Interrupted by user. Exiting...")
 finally:

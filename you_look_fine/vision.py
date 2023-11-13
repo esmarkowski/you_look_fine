@@ -1,4 +1,3 @@
-# api.py
 from openai import OpenAI
 import time
 from .image_processing import encode_image, resize_image

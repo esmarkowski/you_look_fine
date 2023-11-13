@@ -50,7 +50,7 @@ When running without the `--run-once` argument, the script will continously run 
 ## Command-line arguments
 
 - `--repeat-delay`: The delay between repetitions, in milliseconds. Default is 5000.
-- `--motion-threshold`: The motion detection threshold. Default is 10000.
+- `--motion-threshold`: The motion detection threshold, in milliseconds. Default is 50000.
 - `--max-time-between-requests`: The maximum time between requests, in seconds. Default is 15.
 - `--debug`: Enable debug mode. If this flag is present, the program will print a debug message instead of sending a request to the API.
 - `--mute`: Mutes TTS.
