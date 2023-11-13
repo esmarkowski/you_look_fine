@@ -49,16 +49,18 @@ When running without the `--run-once` argument, the script will continously run 
 
 ## Command-line arguments
 
-- `--repeat-delay`: The delay between repetitions, in milliseconds. Default is 5000.
-- `--motion-threshold`: The motion detection threshold, in milliseconds. Default is 50000.
-- `--max-time-between-requests`: The maximum time between requests, in seconds. Default is 15.
-- `--debug`: Enable debug mode. If this flag is present, the program will print a debug message instead of sending a request to the API.
-- `--mute`: Mutes TTS.
-- `--run-once`: Runs until motion is detected and compliment is delivered. 
-- `--vision-prompt TEXT`: Instructions for vision. Default: Give a short compliment based on the person's appearance in the image. Call out distinct features.
-- `--voice TEXT`: The voice to use for text-to-speech. Default is 'fable'. Choices are 'alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'.
+- `--motion-threshold`: The motion detection threshold. Default is 10000.
+- `--max-time-between-requests`: The maximum time between requests, in milliseconds. Default is 500000.
+- `--debug`: Enable debug mode. If this flag is present, the program will run in debug mode.
+- `--mute`: Mutes the audio. If this flag is present, the program will run without audio.
+- `--run-once`: Runs until detection is made and compliment is given. If this flag is present, the program will exit after one detection and compliment.
+- `--vision-prompt`: Instructions for vision. Default: "Give a short compliment based on the person's appearance in the image. Call out distinct features."
+- `--voice`: The voice to use for text-to-speech. Default is 'fable'. Choices are 'alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'.
+- `--infer-action`: Infer action in the scene from multiple frames. If this flag is present, the program will infer actions.
+- `--capture-frames`: The number of frames to capture when inferring action. Default is 1.
+- `--capture-frames-delay`: The delay between capturing frames, in milliseconds. Default is 1000.
 - `--camera`: The camera source. Can be an integer for a local camera or a string for an RTSP URL. Default is 0.
-
+  
 ## Examples
 
 #### Run until motion is detected

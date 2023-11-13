@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description='Run YouLookFine.')
 parser.add_argument('--motion-threshold', type=int, default=10000, help='The motion detection threshold.')
-parser.add_argument('--max-time-between-requests', type=int, default=500000, help='The maximum time between requests, in seconds.')
+parser.add_argument('--max-time-between-requests', type=int, default=500000, help='The maximum time between requests, milliseconds.')
 parser.add_argument('--debug', action='store_true', help='Enable debug mode.')
 parser.add_argument('--mute', action='store_true', help='Mute audio.')
 parser.add_argument('--run-once', action='store_true', help='Runs until detection is made and compliment is given.')
