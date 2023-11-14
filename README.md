@@ -106,3 +106,6 @@ bin/you_look_fine --debug --run-once --vision-prompt "Describe the person in the
 ```
 bin/you_look_fine --run-once --infer-action --vision-prompt "Describe who is at the door." --camera "rtsps://YOUR_RTSPS_STREAM"
 ```
+```
+bin/you_look_fine --debug --soft-run --capture-frames 3 --capture-frames-delay 1000 --motion-threshold 480000 --camera rtsps://YOUR_RTSP_STREAM --vision-prompt "Please provide a specific description of the action being observed in a single, cohesive moment, using clear and simple language suitable for a 10-year-old. Describe the setting or context and the subjects involved as they appear at one specific instance, not as a sequence of actions. Use precise and descriptive language to capture the nature of the key action in this single moment. The details should be those that can be confidently observed or inferred from this moment. Focus on the most relevant and significant aspects of the action or scene, and respond in second person perspective in one or two sentences."  --max-time-between-requests 5000
+```
