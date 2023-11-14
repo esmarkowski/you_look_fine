@@ -1,19 +1,12 @@
 # You Look Fine To Me
 
-This Python script is designed to detect motion through a webcam and analyze it using GPT Vision and recieving the analysis using OpenAI Text to Speech. When motion is detected, it sends a request to an AI assistant, which generates a compliment based on the image captured. The compliment is then converted to speech and played back.
+This script is designed to detect motion through a video feed and analyze it using GPT Vision and speak the response with OpenAI Text to Speech. It can also be used to infer action over a series of frames. 
+It uses OpenCV for motion detection and can filter on object detection (e.g. only sending requests to GPT Vision when a person is detected)
 
 __"Mirror, mirror on the wall..."__
 ```
-bin/you_look_fine --debug --run-once
+bin/you_look_fine --debug --run-once --vision-prompt "Mirror, mirror on the wall.. Describe the person you see. Respond as the mirror from Snow White." --detect person
 ```
-
-The script uses OpenCV for motion detection and the OpenAI API for generating compliments. It's designed to be run on a Mac, Linux (especially raspi), using the afplay or mpg123 command to play audio.
-
-You can stop the script by pressing Ctrl+C. It also ensures that the webcam is properly released and all windows are destroyed when the script ends, regardless of whether it was interrupted or finished normally.
-
-Use at your own risk. You can easily hit rate limits if you don't use --run-once or read the command line arguments. 
-
-
 
 ## Installation
 
@@ -43,7 +36,7 @@ export OPENAI_API_KEY=your_actual_key_here
 Run the script from the command line with the following arguments:
 
 ```
-bin/you_look_fine --run-once
+bin/you_look_fine --debug --run-once
 ```
 When running without the `--run-once` argument, the script will continously run and deliver compliments based on the frequency you specify with the following arguments. 
 
@@ -61,7 +54,8 @@ When running without the `--run-once` argument, the script will continously run 
 - `--capture-frames-delay`: The delay between capturing frames, in milliseconds. Default is 1000.
 - `--camera`: The camera source. Can be an integer for a local camera or a string for an RTSP URL. Default is 0.
 - `--soft-run`: Skips making calls to AI
-  
+- `--detect`: The features to detect before sending to AI. Choices are one or more of person, car, cat, dog, bird, horse, sheep, cow. Seperated by space.
+
 ## Examples
 
 #### Run until motion is detected
@@ -106,6 +100,8 @@ bin/you_look_fine --debug --run-once --vision-prompt "Describe the person in the
 ```
 bin/you_look_fine --run-once --infer-action --vision-prompt "Describe who is at the door." --camera "rtsps://YOUR_RTSPS_STREAM"
 ```
+
+#### Every 30 seconds describe the person or cat
 ```
-bin/you_look_fine --debug --soft-run --capture-frames 3 --capture-frames-delay 1000 --motion-threshold 480000 --camera rtsps://YOUR_RTSP_STREAM --vision-prompt "Please provide a specific description of the action being observed in a single, cohesive moment, using clear and simple language suitable for a 10-year-old. Describe the setting or context and the subjects involved as they appear at one specific instance, not as a sequence of actions. Use precise and descriptive language to capture the nature of the key action in this single moment. The details should be those that can be confidently observed or inferred from this moment. Focus on the most relevant and significant aspects of the action or scene, and respond in second person perspective in one or two sentences."  --max-time-between-requests 5000
+bin/you_look_fine --debug --capture-frames 3 --capture-frames-delay 600 --motion-threshold 480000 --camera rtsps://YOUR_RTSP_STREAM --vision-prompt "Please describe the person in this scene. Describe them like you're a surprised hippy. Focus on the most relevant and significant aspects of the person and their outfit, and respond in second person perspective in one or two sentences."  --max-time-between-requests 30000 --detect person cat
 ```
