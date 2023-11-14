@@ -5,6 +5,7 @@ import cv2
 import os
 import time
 import sys
+import numpy as np
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -22,6 +23,7 @@ parser.add_argument('--capture-frames', type=int, default=1, help='The number of
 parser.add_argument('--capture-frames-delay', type=int, default=1000, help='The delay between capturing frames, in milliseconds.')
 parser.add_argument('--camera', default=0, help='The camera source. Can be an integer for a local camera or a string for an RTSP URL.')
 parser.add_argument('--soft-run', action='store_true', help='Run without any calls to APIs.' )
+parser.add_argument('--detect', nargs='+', help='The features to detect.', default=['person'], choices=['person', 'car', 'cat', 'dog', 'bird', 'horse', 'sheep', 'cow'])
 
 # Setup configuration
 from you_look_fine.config import config
@@ -34,29 +36,18 @@ from you_look_fine.camera_reader import CameraReader
 from you_look_fine.logger import logger
 
 logger.info("Initializing...")
-# Initialize the motion detection
-camera_source = config['camera']
-try:
-    # Try to convert the camera source to an integer
-    camera_source = int(camera_source)
-except ValueError:
-    # If it can't be converted to an integer, assume it's an RTSP URL
-    pass
-
-camera = cv2.VideoCapture(camera_source)
-motion_detector = cv2.createBackgroundSubtractorMOG2()
 
 # Initialize the request state
 frame_counter = 0
 request_in_progress = False
-camera_warmed_up = False
 
-WARM_UP_FRAMES = 10
+WARM_UP_FRAMES = 100
 frames = []
 
 voice = Voice('/tmp/you_look_fine_response.mp3')
 vision = Vision()
-reader = CameraReader(camera)
+vision.detail = 'low'
+reader = CameraReader( config['camera'], config['motion_threshold'], config['debug'])
 reader.start()
 
 try:
@@ -64,70 +55,67 @@ try:
         frame = reader.get_latest_frame()
         if frame is None:
             continue
-        # Apply the motion detector to the frame
-        motion_mask = motion_detector.apply(frame)
 
-        if not camera_warmed_up:
+        if frame_counter <= WARM_UP_FRAMES:
             frame_counter += 1
-            if frame_counter > WARM_UP_FRAMES:
-                # After 20 frames, consider the camera warmed up
-                logger.info("Camera initialized")
-                camera_warmed_up = True
-            else:
-                continue
+            continue
 
-        motion_detected = motion_mask.sum() > config['motion_threshold'] 
+        if config['debug']:
+            cv2.imshow('Main Feed', frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
         time_since_last_vision_request = time.time() - vision.last_request['time']
         can_make_requests = time_since_last_vision_request > (config['max_time_between_requests']/ 1000)
 
         # If there's enough motion and no request is in progress, proceed
-        if motion_detected and can_make_requests and not request_in_progress:
-            logger.info("Motion detected")
+        if reader.motion_detected() and can_make_requests and not request_in_progress:
 
-            for _ in range(config['capture_frames']):
-                frame = reader.get_latest_frame()  # Capture a new frame
-                if frame is None:
-                    continue
-
-                image_path = f'/tmp/detected_motion_{len(frames)}.jpg'
-                cv2.imwrite(image_path, frame)
-                frames.append(image_path)
-
-                logger.debug("Frame captured, waiting %d ms", config['capture_frames_delay'])
-
-                time.sleep(config['capture_frames_delay'] / 1000)  # convert ms to seconds
-
-            # If we have enough frames or we're not inferring action, proceed
-            frame_buffer_ready = len(frames) == config['capture_frames']
-
-            if frame_buffer_ready:
-                logger.debug("Making vision request: %s", frames)
-
-                if not config['soft_run']:
-                    # Get vision request for the images
-                    request_in_progress = True
-                    
-                    vision_response = vision.analyze(frames, config['vision_prompt'])
-                    logger.debug("Vision Response: %s", vision_response)
-                    # Play the audio file
-                    if not config['mute']:
-                        # Convert the vision request to speech
-                        logger.debug("%s speaking...", config['voice'])
-                        voice.text_to_speech(vision_response, config['voice'])
-                        voice.speak()
-
-                    # Set the request state back to not in progress and clear the frames
-                    frames = []
-                    request_in_progress = False
-
-                if config['run_once']:
+            if config['debug']:
+                logger.debug("Motion detected: %s, %s", reader.motion_mask.sum(), config['motion_threshold'])
+                # Display the motion mask
+                cv2.imshow('Motion Mask', reader.motion_mask)
+                if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
+
+                detection_overlay = reader.feature_detection_frame()
+                if detection_overlay is not None:
+                    cv2.imshow('Features', detection_overlay)
+                    if cv2.waitKey(1) & 0xFF == ord('q'):
+                        break
+
+            if reader.has_feature(*config['detect']):
+
+                logger.info("Feature detected: %s", reader.detected_features)
+                frames = reader.capture_frames(config['capture_frames'], config['capture_frames_delay'])
+                # If we have enough frames or we're not inferring action, proceed
+                if len(frames) == config['capture_frames']:
+                    logger.info("Making vision request: %s", frames)
+
+                    if not config['soft_run']:
+                        # Get vision request for the images
+                        request_in_progress = True
+                        
+                        vision_response = vision.analyze(frames, config['vision_prompt'])
+                        logger.info("Vision Response: %s", vision_response)
+                        # Play the audio file
+                        if not config['mute']:
+                            # Convert the vision request to speech
+                            logger.info("%s speaking...", config['voice'])
+                            voice.text_to_speech(vision_response, config['voice'])
+                            voice.speak()
+
+                        # Set the request state back to not in progress and clear the frames
+                        request_in_progress = False
+                    else: 
+                        logger.debug("Soft run, not making request. time_since_last_vision_request: %s", time_since_last_vision_request)
+                        vision.last_request = {'time': time.time()}
+
+                    if config['run_once']:
+                        break
 
 except KeyboardInterrupt:
     logger.info("Interrupted by user. Exiting...")
 finally:
     # Release the camera and destroy all windows
     reader.stop()
-    time.sleep(0.1)
-    camera.release()
-    cv2.destroyAllWindows()

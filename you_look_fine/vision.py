@@ -5,6 +5,7 @@ class Vision:
     def __init__(self):
         self.last_request = {'time': 0}
         self._client = None
+        self._detail = 'auto'
 
     def analyze(self, frames, prompt):
         # Upload the images as files to OpenAI
@@ -34,13 +35,14 @@ class Vision:
     def build_attachments(self, frames):
         attachments = []
         for image_path in frames:
-            resized_image = resize_image(image_path)
+            resized_image = resize_image(image_path )
             # Getting the base64 string
             base64_image = encode_image(resized_image)
             attachments.append({
                 "type": "image_url",
                 "image_url": {
-                    "url": f"data:image/jpeg;base64,{base64_image}"
+                    "url": f"data:image/jpeg;base64,{base64_image}",
+                    "detail": self.detail
                 }
             })
         return attachments
@@ -50,3 +52,11 @@ class Vision:
         if self._client is None:
             self._client = OpenAI()
         return self._client
+
+    @property
+    def detail(self):
+        return self._detail
+
+    @detail.setter
+    def detail(self, value):
+        self._detail = value

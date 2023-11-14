@@ -2,7 +2,7 @@
 from PIL import Image
 import base64
 
-def resize_image(image_path, max_size=(800, 600)):
+def resize_image(image_path, max_size=(512, 512)):
     with Image.open(image_path) as img:
         # Calculate the aspect ratio
         aspect_ratio = img.width / img.height
